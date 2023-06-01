@@ -37,14 +37,6 @@ jobs:
       shell: bash
       run: cmake --build . 
       
-    - name: List buildfiles
-      if: runner.os == 'Windows'
-      run: dir build\Debug
-      
-    - name: List x64 buildfiles
-      if: runner.os == 'Windows'
-      run: dir build\X64
-      
     - name: Archive artifact
       if: runner.os != 'Windows'
       uses: actions/upload-artifact@v3
