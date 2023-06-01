@@ -8,8 +8,6 @@ on:
 
 jobs:
   build:
-    name: ${{matrix.config.name}}
-    runs-on: ${{matrix.config.os}}
     strategy:
       fail-fast: false
       matrix:
@@ -20,6 +18,8 @@ jobs:
           - name: "Windows Latest"
             os: windows-latest
             artifact: "buid/Debug/defleece.exe"
+    name: ${{matrix.config.name}}
+    runs-on: ${{matrix.config.os}}
 
     steps:
     - uses: actions/checkout@v3
