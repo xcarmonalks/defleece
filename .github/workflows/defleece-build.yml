@@ -39,7 +39,11 @@ jobs:
       
     - name: List buildfiles
       if: runner.os == 'Windows'
-      run: dir build
+      run: dir build\Debug
+      
+    - name: List x64 buildfiles
+      if: runner.os == 'Windows'
+      run: dir build\X64
       
     - name: Archive artifact
       if: runner.os != 'Windows'
@@ -53,6 +57,6 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: defleece.exe
-        path: build/buid/Debug/defleece.exe
+        path: build\Debug\defleece.exe
       
     
