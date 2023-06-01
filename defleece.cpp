@@ -207,7 +207,7 @@ int extractDatabase(const char* path){
 
         auto stop = high_resolution_clock::now();
         auto duration = duration_cast<seconds>(stop - start);
-        printf("Decodified kv_default to out.db in %ld seconds\n", duration.count());
+        printf("Decodified %d rows from kv_default to out.db in %ld seconds\n", row, duration.count());
 
         return 0;
     }
