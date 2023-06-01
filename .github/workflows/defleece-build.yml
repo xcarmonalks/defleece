@@ -12,13 +12,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: "Ubuntu Latest"
-            os: ubuntu-latest
+          - os: ubuntu-latest
             artifact: "defleece"
-          - name: "Windows Latest"
-            os: windows-latest
+          - os: windows-latest
             artifact: "buid/Debug/defleece.exe"
-    name: ${{matrix.config.name}}
     runs-on: ${{matrix.config.os}}
 
     steps:
