@@ -40,6 +40,9 @@ jobs:
     - name: List files
       run: ls -la
       
+    - name: List buildfiles
+      run: ls -la build
+      
     - name: Archive artifact
       if: runner.os != 'Windows'
       uses: actions/upload-artifact@v3
