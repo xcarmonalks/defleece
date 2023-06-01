@@ -19,6 +19,7 @@ add_subdirectory(vendor/fleece)
 add_subdirectory(vendor/SQLiteCpp/sqlite3)
 
 include_directories(vendor/fleece/API)
+include_directories(vendor/SQLiteCpp/sqlite3)
 
 add_executable(defleece defleece.cpp)
-target_link_libraries(defleece FleeceStatic sqlite3)
+target_link_libraries(defleece FleeceBase FleeceStatic FleeceObjects sqlite3)
