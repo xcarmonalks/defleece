@@ -9,14 +9,9 @@ on:
 jobs:
   build:
     strategy:
-      fail-fast: false
       matrix:
-        include:
-          - os: ubuntu-latest
-            artifact: "defleece"
-          - os: windows-latest
-            artifact: "buid/Debug/defleece.exe"
-    runs-on: ${{matrix.config.os}}
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v3
@@ -43,9 +38,17 @@ jobs:
       run: cmake --build . 
       
     - name: Archive artifact
+      if: runner.os != 'Windows'
       uses: actions/upload-artifact@v3
       with:
-        name: code-coverage-report
-        path: ${{matrix.config.artifact}}
+        name: archive-artifact
+        path: "defleece"
+        
+    - name: Archive artifact (Windows)
+      if: runner.os == 'Windows'
+      uses: actions/upload-artifact@v3
+      with:
+        name: archive-artifact
+        path: "buid/Debug/defleece.exe"
       
     
