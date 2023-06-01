@@ -37,6 +37,9 @@ jobs:
       shell: bash
       run: cmake --build . 
       
+    - name: List files
+      run: ls -la
+      
     - name: Archive artifact
       if: runner.os != 'Windows'
       uses: actions/upload-artifact@v3
@@ -49,6 +52,6 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: defleece.exe
-        path: buid/Debug/defleece.exe
+        path: buid\Debug\defleece.exe
       
     
