@@ -41,14 +41,14 @@ jobs:
       if: runner.os != 'Windows'
       uses: actions/upload-artifact@v3
       with:
-        name: archive-artifact
-        path: "defleece"
+        name: defleece
+        path: defleece
         
     - name: Archive artifact (Windows)
       if: runner.os == 'Windows'
       uses: actions/upload-artifact@v3
       with:
-        name: archive-artifact
-        path: "buid/Debug/defleece.exe"
+        name: defleece.exe
+        path: buid/Debug/defleece.exe
       
     
