@@ -85,9 +85,14 @@ SharedKeys findSharedKeys(sqlite3 *db) {
 
 }
 
-void prepareOutDb(sqlite3 *dbOut) {
+sqlite3_stmt* prepareOutDb(sqlite3 *dbOut) {
     char *error_report = NULL;
     int result = -1;
+
+    sqlite3_exec(dbOut, "PRAGMA synchronous=OFF", NULL, NULL, &error_report);
+    sqlite3_exec(dbOut, "PRAGMA count_changes=OFF", NULL, NULL, &error_report);
+    sqlite3_exec(dbOut, "PRAGMA journal_mode=MEMORY", NULL, NULL, &error_report);
+    sqlite3_exec(dbOut, "PRAGMA temp_store=MEMORY", NULL, NULL, &error_report);
 
     string drop = "DROP TABLE IF EXISTS kv_default;";
     if(result = sqlite3_exec(dbOut, drop.c_str(), 0, 0, &error_report)) {
@@ -100,22 +105,22 @@ void prepareOutDb(sqlite3 *dbOut) {
         printf( "\t> CMD: %s , Error: %s\n\n" , create.c_str() , error_report );
         sqlite3_free(error_report);
     }
-}
 
-void insertIntoOutDb(sqlite3 *dbOut, string key, int sequence, int flags, string body) {
-    char *error_report = NULL;
-    int result = -1;
     sqlite3_stmt* stmt;
-
     string insert = "INSERT INTO kv_default ('key', 'sequence', 'flags', 'body') VALUES (?,?,?,?);";
     if(sqlite3_prepare_v2(dbOut,  insert.c_str(), -1, &stmt, NULL) == SQLITE_OK){
-        sqlite3_bind_text(stmt, 1, key.c_str(), key.size(), SQLITE_TRANSIENT);
-        sqlite3_bind_int(stmt, 2, sequence);
-        sqlite3_bind_int(stmt, 3, flags);
-        sqlite3_bind_blob(stmt, 4, body.c_str(), body.size(), SQLITE_TRANSIENT);
-        sqlite3_step(stmt);
+        return stmt;
     }
-    sqlite3_finalize(stmt);
+    return NULL;
+}
+
+void insertIntoOutDb(sqlite3_stmt *stmt, string key, int sequence, int flags, string body) {
+    sqlite3_bind_text(stmt, 1, key.c_str(), key.size(), SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 2, sequence);
+    sqlite3_bind_int(stmt, 3, flags);
+    sqlite3_bind_blob(stmt, 4, body.c_str(), body.size(), SQLITE_STATIC);
+    sqlite3_step(stmt);
+    sqlite3_reset(stmt);
 }
 
 int extractDatabase(const char* path){
@@ -137,8 +142,6 @@ int extractDatabase(const char* path){
         
         string query = "SELECT key, sequence, flags, body from kv_default";
 
-        //printf("Query: %s\n", query.c_str());
-
         if(sqlite3_prepare_v2(db,  query.c_str(), -1, &stmt, NULL)!= SQLITE_OK){
             printf("ERROR: while compiling sql: %s\n", sqlite3_errmsg(db));
             sqlite3_close(db);
@@ -147,7 +150,7 @@ int extractDatabase(const char* path){
         }
 
         SharedKeys sk = findSharedKeys(db);
-        prepareOutDb(dbOut);
+        stmtOut = prepareOutDb(dbOut);
 
         bool done = false;
         printf("Performing extraction... \n");
@@ -184,7 +187,7 @@ int extractDatabase(const char* path){
                     
                     auto json = doc.root().toJSONString();
                     //printf ("Row: %d, Key: %s, Fleece: %s \n", row, text, json.c_str());
-                    insertIntoOutDb(dbOut, keyStr.str(), sequence, flags, json);
+                    insertIntoOutDb(stmtOut, keyStr.str(), sequence, flags, json);
                     row++;
                     break;
                 }
@@ -201,9 +204,11 @@ int extractDatabase(const char* path){
             }
         }
 
-        sqlite3_finalize(stmt);
-        sqlite3_close(db);
         sqlite3_close(dbOut);
+        sqlite3_finalize(stmtOut);
+
+        sqlite3_close(db);
+        sqlite3_finalize(stmt);
 
         auto stop = high_resolution_clock::now();
         auto duration = duration_cast<seconds>(stop - start);
